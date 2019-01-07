@@ -6,15 +6,16 @@
 Genotyped Data Imputation and Analysis
 ======================================
 
-During 2018, I started to research the applications of genomic prediction to common disease, particularly autoimmunity.Being new in this area I have been learning how to prepare and analyse data in plink format (bim/bed/fam) before and after imputation (using the `Michigan Server`_).
+During 2018, I started to research the applications of genomic prediction to common disease, particularly autoimmunity. Being new in this area I have been learning how to prepare and analyse data in plink format (bim/bed/fam) before and after imputation (using the `Michigan Server`_).  
 
 .. _`Michigan Server`: https://imputationserver.sph.umich.edu/index.html
 
-Here, I present a guide of the steps and scripts that I have used. Note that, these steps applied to what I have been done, and they may not completly apply to other studies.
+Here, I present a guide of the steps and scripts that I have used. Most of the work was done using plink version 1.9, python 2.7 and R. Beware that these are the steps that I followed for my reaserch and they may not completely apply to other studies.
 
-code::
-        print 'hello'
-        >> hello
+.. code-block:: python
+
+  print 'THIS PAGE IS UNDER CONSTRUCTION'
+  >> hello
 
 
 .. toctree::

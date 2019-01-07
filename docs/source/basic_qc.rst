@@ -9,20 +9,17 @@ In order to impute a plink file (bim/bed/fam) we first need to be sure that the 
 
   * We can check the NCBI build by selecting some random rsids from the .bim file and checking their chromosome and position fields in https://www.ncbi.nlm.nih.gov/SNP/. 
     
-  * Another option is to download the data bases of NCBI builds extracted from dbSNP (`GRCh37`_ or `GRCh46`_) and check the rsids positions and chromosome in these files (ex. using grep rsid data_base)
+  * Another option is to download the data bases of NCBI builds extracted from dbSNP (`GRCh37`_ or `GRCh36`_) and check the rsids positions and chromosome in these files (ex. using grep rsid data_base)
 
-If requiered, to update the rsids we followed two steps:
+Finally, to update the rsids we followed two steps:
 
-  * Update the rsids names 
-.. if needed (update_rsids_names using rsMerge_id_to_id.txt from the assembly_build folder)
-.. Ex: sbatch /home/rcanovas/scripts/plink/update_rsids_names.sh file /home/rcanovas/assembly_builds/rsMeger_id_to_id.txt  file_b3
+  * Note that on new genome assembly, previously different contig may align. So different rs clusters map to the same location. To fix this use the `RsMergeArch`_ table (https://www.ncbi.nlm.nih.gov/projects/SNP/snp_db_table_description.cgi?t=RsMergeArch) from NCBI and plink to update the rsids. 
 
-  * Update the rsids positions to NCBI build 37 
-.. (check /home/rcanovas/scripts/plink/update_rsids_pos.sh and use rsids_pos_b37.txt  from the assembly_build folder)
-
+  * Update the rsids positions to NCBI build 37 (if required) using the information from GRCh37 and plink (--update-map command)
 
 .. _`GRCh37`:	http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/snp130.txt.gz
 .. _`GRCh36`:	http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/snp150.txt.gz  
+.. _`RsMergeArch`: ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606/database/organism_data/RsMergeArch.bcp.gz
 
 
 
@@ -33,13 +30,38 @@ This is usually caused by male heterozygous calls in the X chromosome pseudo-aut
 
   * Check that the sex of the individuals are correct (check-sex command line on plink tool). 
     
-  * If the waring is cause by SNPs that are in XY area, try to use split-x b37: 
-            
-          plink1.9 --bfile prefix_plink_file --split-x b37 no-fail --make-bed --out prefix_output_file
- 
+  * If the waring is cause by SNPs that are in XY area, try to use split-x b37
 
-.. * If nothing change, warnings must be variant-calling errors (but genotype calls of those rsids are correct)
-.. * Use --make-bed --set-hh-missing to set those calls to missing if required (check 
-.. /home/rcanovas/scripts/plink/ignore_hh.sh)
+  .. code-block:: console
+  
+    plink1.9 --bfile file --split-x b37 no-fail --make-bed --out output_file
+  
+  * If nothing change, warnings must be variant-calling errors (but genotype calls of those rsids are correct) and in this case 
+    you can set those calls to missing if required
 
-.. Ex: sbatch /home/rcanovas/scripts/plink/ignore_hh.sh file_b37 file_b37h
+  .. code-block:: console
+
+    plink1.9 --bfile file --make-bed --set-hh-missing --out output --allow-no-sex
+
+
+Filter SNPs and Individuals
+----------------------------
+
+An important part of preprocessing out file considered exclude individuals and SNPs that do not carry 
+sufficient information reliable. In our case we considered the following parameters:
+
+  * Exclude individuals and SNPs with high missing genotype data (ex. 10%)
+
+  * Filter SNPs with low minor allele frequency (MAF) (ex. MAF < 0.01)
+    
+  .. code-block:: console
+
+    plink1.9 --bfile file --maf 0.01 --geno 0.1 --mind 0.1 --allow-no-sex --make-bed --out output
+
+
+Principal Component Analysis (PCA)
+-----------------------------------
+
+Before imputing the data, if cases/control information are presented in the phenotype data, it is recommendable to do 
+a PCA analysis of the set.
+
