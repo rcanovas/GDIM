@@ -56,12 +56,40 @@ sufficient information reliable. In our case we considered the following paramet
     
   .. code-block:: console
 
-    plink1.9 --bfile file --maf 0.01 --geno 0.1 --mind 0.1 --allow-no-sex --make-bed --out output
+    plink1.9 --bfile file --maf 0.01 --geno 0.1 --mind 0.1 --allow-no-sex --make-bed --out file_qc
 
 
 Principal Component Analysis (PCA)
 -----------------------------------
 
 Before imputing the data, if cases/control information are presented in the phenotype data, it is recommendable to do 
-a PCA analysis of the set.
+a PCA analysis of the set. Principal component analysis (PCA) is a technique used to emphasize variation and bring out 
+strong patterns in a dataset. In general, it is used to measure the quality of the genomic data analyzed and understanding 
+its population genetic structure. That is, checking the bash effect between cases and control and made sure that the 
+technical variations is not artifcial. A simple example of how PCA works can be found in http://setosa.io/ev/principal-component-analysis/. In order to do a PCA over plink files, we used the `flashpca`_ tool.
+
+First, compute and filter the file using `linkage disequilibrium`_ (LD) and plink:
+
+.. code-block:: console
+
+  plink1.9 --bfile file_qc --indep-pairwise 1000 50 0.05 --exclude range exclusion_regions_hg19.txt --allow-no-sex
+  plink1.9 --bfile file_qc --extract plink.prune.in --make-bed --allow-no-sex --out file_qc_prunned
+ 
+The exclusion_regions_hg19.txt file ca be obtained from the flashpca project page and contains the region of the human 
+genome that would not be considered. The --indep-pairwise option generates a list of markers in approximate linkage 
+equilibrium, where the first parameter is the window size in kB, the second is the step used, and the third is the r^2 
+threshold. The first command line creates two file, prune.in and prune.out, which are used in the second command line to 
+prune the information. 
+
+Secondly, run flashpca on the pruned dataset:
+
+.. code-block:: console
+
+  flashpca --bfile file_qc_prunned -d 10
+
+The -d command indicates the number od PCs values to be computed. 
+
+
+.. _`linkage disequilibrium`: https://en.wikipedia.org/wiki/Linkage_disequilibrium).
+.. _`flashpca`: https://github.com/gabraham/flashpca  
 
